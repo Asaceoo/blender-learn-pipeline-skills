@@ -34,7 +34,7 @@ OUT = os.path.join(os.path.dirname(bpy.data.filepath) or ".", "render")  # 或�
 setup_render(samples=48)
 add_camera(location=(7, -7, 5), target=(0, 0, 1))
 render_stills(OUT)            # 主视角/等轴/俯视 三张 PNG
-render_turntable(OUT)         # 360° 环绕 mp4（--frames 控制）
+render_turntable(OUT, prefix="主题—360环绕")   # 360° 环绕 mp4（交付命名用中文前缀）
 ```
 
 注意：脚本里**不要**调用 `main()`——助手库的入口由 Blender 命令行触发，import 时不会执行。
