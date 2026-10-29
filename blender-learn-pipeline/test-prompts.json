@@ -1,0 +1,8 @@
+{
+  "skill_name": "blender-learn-pipeline",
+  "evals": [
+    {"id": 1, "prompt": "用 Blender 3D 学习流水线讲 TCP 三次握手，做成分层 3D", "expected_output": "主卡+三视角PNG+环绕mp4+自检题，产物真实存在", "files": []},
+    {"id": 2, "prompt": "快速过一下什么是熵，大概讲讲就行", "expected_output": "触发速览档：只出本质+类比+1张静帧+2道自检，跳过DAG与环绕视频", "files": []},
+    {"id": 3, "prompt": "把递归做成 3D 可视化学习包", "expected_output": "隐喻标注为主体的完整流水线交付", "files": []}
+  ]
+}
