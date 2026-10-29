@@ -145,3 +145,19 @@ msyh.ttc → msyhbd.ttc → simhei.ttf → simsun.ttc → arial.ttf
 ## 七、限时与降级链
 
 单件渲染 5 分钟无产物 → 降帧（24→12）→ 降采样（48→16）→ 只出 3 静帧 → 主卡注明降级。禁止无限等待，禁止交付未真实运行的伪产物。
+
+## 二点九、TeachQuiz 自动评测（teach_quiz.py）
+
+Stage 5 的量化落地（对标 Code2Video TeachQuiz：评测目的是量化「讲没讲明白」）：
+
+```python
+from teach_quiz import gen_quiz, record_answer, grade, ask_vlm
+p = gen_quiz("知识体系塔", OUT, chain_hints=["原子事实是什么", ...], n=5)
+# 宿主 AI 看渲染图作答（AI 使用方环节），逐题记录：
+record_answer(p, "Q1", "作答内容", image="render/02-等轴视角.png")
+md, score, gaps = grade(p, OUT + r"\评测报告.md")   # 总分 0-100 + 缺口题列表
+```
+
+- `answer_points` 元素可为**同义词组**（列表）：`['隐喻', ['非实体', '不是实体']]`——组内任一命中即算
+- 评分含缺口回流定位：chain_start 缺口→补 Stage 1、derivation→补 Stage 2、counter_example→补 Stage 4
+- `ask_vlm`（可选）：探测本机 OpenAI 兼容端点（默认 127.0.0.1:8000）让视觉模型自动作答；不可用返回 None，流程由宿主 AI 作答，不中断
