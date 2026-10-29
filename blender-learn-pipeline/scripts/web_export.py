@@ -33,13 +33,15 @@ _VIEWER_TEMPLATE = """<!DOCTYPE html>
 
 
 def export_glb(out_path):
-    """把当前场景导出为 GLB。返回文件路径。"""
+    """把当前场景导出为 GLB。空场景会被拦截（空 GLB 仅百余字节头部）。返回文件路径。"""
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=str(out_path), export_format="GLB",
                               export_apply=True)  # apply 修改器，保证几何完整
     if not out_path.exists() or out_path.stat().st_size == 0:
         raise RuntimeError(f"GLB 导出失败或为空: {out_path}")
+    if out_path.stat().st_size < 1024:
+        raise RuntimeError(f"导出的 GLB 仅 {out_path.stat().st_size} 字节——场景疑似为空，先建主体再导出")
     return str(out_path)
 
 
@@ -48,6 +50,8 @@ def build_viewer_html(glb_path, out_html, title="3D 模型"):
     glb_path = Path(glb_path)
     if not glb_path.exists():
         raise RuntimeError(f"GLB 不存在: {glb_path}")
+    if glb_path.read_bytes()[:4] != b"glTF":
+        raise RuntimeError(f"不是有效的 GLB 文件（缺 glTF magic）: {glb_path}")
     b64 = base64.b64encode(glb_path.read_bytes()).decode()
     out_html = Path(out_html)
     out_html.parent.mkdir(parents=True, exist_ok=True)
