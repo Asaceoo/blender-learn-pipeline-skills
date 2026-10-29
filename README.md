@@ -6,9 +6,19 @@
 拆到底层 → 建体系 → Blender 3D 可视化 → 讲清本质 → 自检闭环
 ```
 
-**当前版本：v1.6.0**
+**当前版本：v1.7.0**
 
-核心立场：看懂每一行字 ≠ 脑子里有画面。抽象概念的困难不在公式难，而在它们本质是**结构或过程**——结构与过程必须被立起来看。本技能把「立起来看」固定为流水线第三段，一律用本机 Blender 无头渲染出**真 3D 产物**（多视角 PNG + 360° 环绕 mp4），不交付想象中的图。
+核心立场：看懂每一行字 ≠ 脑子里有画面。
+
+**四层能力栈**（v1.7.0）：
+
+| 层 | 能力 | 模块 |
+|---|---|---|
+| 渲染 | 多视角 PNG + 360° 环绕 mp4（Cycles，中文标注防重影） | `blender_learn.py` |
+| 教具 | 参数化组件：分层塔 / 管道流 / 齿轮咬合（自动传动比）/ 轨道系统 | `teaching_components.py` |
+| CAD | SolidCraft 桥接：参数化精确建模 → STL → 渲染（含 MCP 对话式建模） | `cad_bridge.py` |
+| 交付 | 可拖拽网页 3D（单文件 HTML）+ 中文旁白带声视频（TTS 降级链） | `web_export.py` `narration.py` |
+抽象概念的困难不在公式难，而在它们本质是**结构或过程**——结构与过程必须被立起来看。本技能把「立起来看」固定为流水线第三段，一律用本机 Blender 无头渲染出**真 3D 产物**（多视角 PNG + 360° 环绕 mp4），不交付想象中的图。
 
 ## 概念图（真机渲染，非示意图）
 
@@ -109,6 +119,13 @@ setup_render(samples=48)
 add_camera(location=(7, -7, 5), target=(0, 0, 1))
 render_stills("render")          # 三视角 PNG
 render_turntable("render", prefix="主题—360环绕")  # 主题—360环绕.mp4
+
+# 加分项：交互网页 + 中文旁白
+from web_export import export_interactive
+export_interactive("render", title="主题（拖拽旋转）")   # 模型.glb + 模型—交互.html
+from narration import narrate_video
+narrate_video("render/主题—360环绕.mp4", "这就是核心层的原理……",
+              "render/主题—带旁白.mp4")                   # edge-tts 403 自动降级离线语音
 ```
 
 ```bash
@@ -174,7 +191,9 @@ python package.py --no-bump # 不递增仅重打包
 ├── [主题]_scene.py             # 可复跑的场景脚本
 └── render/
     ├── 01-主视角.png  02-等轴视角.png  03-俯视角.png
-    └── [主题]—360环绕.mp4      # 360° 环绕（H264，prefix 参数定名）
+    ├── [主题]—360环绕.mp4      # 360° 环绕（H264，prefix 参数定名）
+    ├── [主题]—3D交互.html      # 单文件可拖拽网页（model-viewer）
+    └── [主题]—带旁白.mp4       # 中文旁白版（TTS 降级链自动选引擎）
 ```
 
 ## 质量底线
