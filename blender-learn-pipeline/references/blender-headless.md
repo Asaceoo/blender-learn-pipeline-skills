@@ -70,7 +70,7 @@ made = run_cad_script(cmds, OUT, name="支架", formats=("stl", "step"))   # →
 cad_snapshot(OUT + r"\支架.sc", OUT + r"\预览.png", view="iso")
 
 # ③ 进 Blender 渲染管线（金属灰材质 + 自动居中落地 + 中文标注/环绕）
-import_cad(made["stl"], name="支架", scale=0.06)
+import_cad(made["stl"], name="支架", scale=0.06, location=(0, -4, 0))  # location 错位摆放，避免与塔等组件同占原点穿模
 ```
 
 实测坑（全部踩过）：
