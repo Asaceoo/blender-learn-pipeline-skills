@@ -161,3 +161,22 @@ md, score, gaps = grade(p, OUT + r"\评测报告.md")   # 总分 0-100 + 缺口�
 - `answer_points` 元素可为**同义词组**（列表）：`['隐喻', ['非实体', '不是实体']]`——组内任一命中即算
 - 评分含缺口回流定位：chain_start 缺口→补 Stage 1、derivation→补 Stage 2、counter_example→补 Stage 4
 - `ask_vlm`（可选）：探测本机 OpenAI 兼容端点（默认 127.0.0.1:8000）让视觉模型自动作答；不可用返回 None，流程由宿主 AI 作答，不中断
+
+## 三点〇、概念库（concept_store.py）
+
+Stage 1 拆解结果的沉淀与跨主题复用（对标 Math-To-Manim 知识树缓存：支撑层拆过一次，同源主题直接复用）：
+
+```python
+from concept_store import save_concept, load_concept, reuse_plan, search
+
+# 新主题开工前：支撑层概念哪些已拆过？
+plan = reuse_plan("TCP 三次握手", {"core": "三次握手", "support": ["原子事实", "序列号机制"]})
+# → {"reusable": [("原子事实", "原子事实")], "new": ["序列号机制"], "hit_rate": 0.5}
+
+# 拆解完成后沉淀（同名覆盖保留 created，记 reused_by 复用关系）
+save_concept("三次握手", {"assumptions": [...], "atomic_facts": [...],
+                          "chain": [...], "layers": {"core": "三次握手", ...}})
+```
+
+- 存储默认 `~/.workbuddy/blender-learn-pipeline/concept-store.json`（运行时数据与代码分离）
+- `search(keyword)` 跨概念全文检索；损坏文件自动改名留档不覆盖
