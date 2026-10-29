@@ -51,6 +51,36 @@ render_turntable(OUT, prefix="主题—360环绕")   # 360° 环绕 mp4（交付
 
 四组件均基于 blender_learn 原语构建（继承中文标注防重影约定），真机验证通过（齿轮咬合间距、箭头可见性、标签散布已调优）。新增组件时同样放进本模块，保持「传参数出场景」约定。
 
+## 二点六、SolidCraft CAD 桥接（cad_bridge.py，可选）
+
+机制原理类主体需要**精确尺寸/真实结构**（齿轮、支架、铰链、门五金件）时，用本机 SolidCraft（开源参数化 CAD，headless CLI）建模，导出 STL 后进 Blender 渲染管线：
+
+```python
+from cad_bridge import find_cli, run_cad_script, cad_snapshot, import_cad
+
+# ① 参数化建模 + 导出（SolidCraft 单位 mm）
+cmds = [{"command": "parameters.change", "params": {"name": "width", "expression": "60 mm"}},
+        {"command": "sketch.create", "params": {"plane": "XZ"}},
+        {"command": "sketch.line", "params": {"points": [[0,0],[40,0],[40,6],[6,6],[6,30],[0,30]], "closed": True}},
+        {"command": "sketch.finish", "params": {}},
+        {"command": "solid.extrude", "params": {"distance": "width", "direction": "negative", "body_name": "支架"}}]
+made = run_cad_script(cmds, OUT, name="支架", formats=("stl", "step"))   # → {格式: 路径}
+
+# ② 秒级无头快照预览（不进 Blender，确认形状再渲染）
+cad_snapshot(OUT + r"\支架.sc", OUT + r"\预览.png", view="iso")
+
+# ③ 进 Blender 渲染管线（金属灰材质 + 自动居中落地 + 中文标注/环绕）
+import_cad(made["stl"], name="支架", scale=0.06)
+```
+
+实测坑（全部踩过）：
+- CLI **不自动创建输出目录**（os error 3）——`run_cad_script`/`cad_snapshot` 已内置 `mkdir`
+- `run --out` 不支持 glTF/glb（仅 stl/obj/step/3mf/urdf/sc；glTF 只进不出）
+- STL 无材质，默认白 + 强光会**过曝成白墙**——`import_cad` 默认加金属灰材质并自动居中落地
+- 对象 scale/dimensions 是惰性求值——赋值后必须 `view_layer.update()` 再读
+
+SolidCraft 未安装时 `find_cli()` 返回 None，`run_cad_script` 抛 RuntimeError——按环境降级链处理（提示安装或退回 Blender 建模），不硬上。
+
 ## 三、中文标注（必读）
 
 Blender 默认字体无中文字形，直接用会出豆腐块。助手库 `add_label()` 按以下顺序自动探测系统字体：
