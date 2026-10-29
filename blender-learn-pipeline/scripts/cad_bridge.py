@@ -113,11 +113,12 @@ def cad_snapshot(script, out_png, view="iso", width=1280, height=720, timeout=12
 
 
 def import_cad(path, name="CAD件", scale=0.1, color=(0.55, 0.57, 0.60), metallic=0.8,
-               recenter=True):
+               recenter=True, location=(0, 0, 0)):
     """把 CAD 导出体导入当前 Blender 场景（glTF/STL/OBJ 自动选导入器）。
     scale: SolidCraft 单位 mm；0.1 → 60mm 件变 6 Blender 单位。
     color/metallic: 统一 CAD 金属灰材质（STL/OBJ 无材质信息，默认白会被强光过曝成白墙）。
-    recenter: 包围盒 XY 中心移到原点、底部落到 z=0，便于构图。
+    recenter: 包围盒 XY 中心移到原点、底部落到 z=0；location: 再平移到该世界坐标
+    （与塔等组件同场景组合时用它错位摆放，避免同占原点穿模）。
     返回导入的对象列表。"""
     import mathutils
     path = Path(path)
@@ -153,7 +154,7 @@ def import_cad(path, name="CAD件", scale=0.1, color=(0.55, 0.57, 0.60), metalli
             mx = mathutils.Vector((max(c.x for c in corners), max(c.y for c in corners),
                                    max(c.z for c in corners)))
             center = (mn + mx) / 2
-            root.location.x -= center.x
-            root.location.y -= center.y
-            root.location.z -= mn.z
+            root.location.x -= center.x - location[0]
+            root.location.y -= center.y - location[1]
+            root.location.z -= mn.z - location[2]
     return new
