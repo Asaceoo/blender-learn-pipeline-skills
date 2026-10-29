@@ -81,6 +81,24 @@ import_cad(made["stl"], name="支架", scale=0.06)
 
 SolidCraft 未安装时 `find_cli()` 返回 None，`run_cad_script` 抛 RuntimeError——按环境降级链处理（提示安装或退回 Blender 建模），不硬上。
 
+## 二点七、交互化交付（web_export.py）
+
+渲染之外再加一份**可拖拽的网页 3D**：场景导出 GLB → model-viewer 单文件 HTML（GLB 以 base64 内嵌，规避 file:// CORS——双击即开，无需起服务）：
+
+```python
+from web_export import export_glb, build_viewer_html, export_interactive
+
+glb, html = export_interactive(OUT, title="知识体系塔（拖拽旋转）")
+# 或分步：glb = export_glb(OUT / "模型.glb")；html = build_viewer_html(glb, OUT / "模型—交互.html")
+```
+
+- 依赖：查看时需联网加载 model-viewer CDN（unpkg）；模型 base64 内嵌，无外部文件
+- 交互：拖拽旋转 / 滚轮缩放 / 右键平移 / 自动旋转
+- 交付规范：交互 HTML 与 GLB 放 `render/` 同目录，主卡引用（第二批次产物命名 `[主题]—3D交互.html`）
+- 何时用：空间结构需要「转着看、拆着看」时；纯流程/层次用静帧+环绕已足够，不必强加
+
+MCP 通道（可选）：SolidCraft 自带 MCP server（`solidcraft-cli mcp`，stdio），已注册进 WorkBuddy `~/.workbuddy/mcp.json` 后可对话式建模；未注册时用 `run_cad_script` 脚本通道等价。
+
 ## 三、中文标注（必读）
 
 Blender 默认字体无中文字形，直接用会出豆腐块。助手库 `add_label()` 按以下顺序自动探测系统字体：
