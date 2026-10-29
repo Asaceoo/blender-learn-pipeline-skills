@@ -54,7 +54,7 @@ msyh.ttc → msyhbd.ttc → simhei.ttf → simsun.ttc → arial.ttf
 | 引擎 | 无头可用性 | 用途 |
 |---|---|---|
 | CYCLES（默认） | 稳定，纯 CPU 可跑 | 默认选择；samples 32–48，开降噪 |
-| EEVEE | 需 GPU 上下文，无头环境可能失败 | 仅在 Cycles 正常且需提速时尝试 |
+| EEVEE（`BLENDER_EEVEE`） | 本机实测可用（5.2 无头出图正常）；其他机器可能因无 GPU 上下文失败 | 提速可选；失败即回退 CYCLES |
 
 助手库 `setup_render(engine="CYCLES", samples=48, res=(1280,720))`；视图变换固定 `Standard`（默认 AgX 会把颜色洗灰）。
 
@@ -76,7 +76,7 @@ msyh.ttc → msyhbd.ttc → simhei.ttf → simsun.ttc → arial.ttf
 | 旧的 `[前缀].mp4` 残留导致新产物归位失败 | 渲染前未清理同前缀旧文件，glob 把旧文件当目标 | `render_turntable()` 已内置渲染前清理；手写时先 remove 再 render |
 | `Error: Not found '--'` / argparse 报错 | 命令行漏了 `--` 分隔符 | 补上 `-- --out ...` |
 | 中文全豆腐块 | 用了默认字体（无中文字形） | 确认走 `add_label()` 而非手写 FONT curve |
-| EEVEE 无头黑屏 / GL 报错 | 无 GPU 上下文 | 换 CYCLES |
+| EEVEE 无头黑屏 / GL 报错 | 无 GPU 上下文（个别机器） | 换 CYCLES（本机 5.2 实测 EEVEE 无头可用） |
 | 渲染极慢 | samples 过高 / 分辨率过高 | samples 48→16/32，720p 保持；环绕 24 帧约 2.5 分钟（32 samples 实测） |
 | 输出文件名带帧号（如 `turntable0001-0024.mp4`） | FFMPEG 动画输出命名规则 | 助手库已自动归位为单文件 |
 | 颜色发灰 | 视图变换是 AgX | `scene.view_settings.view_transform = 'Standard'` |
