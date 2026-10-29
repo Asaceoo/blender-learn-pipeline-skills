@@ -18,12 +18,14 @@ QUIZ_KINDS = {
 def gen_quiz(topic, quiz_dir, chain_hints=None, n=5, extra=None):
     """生成题库骨架 JSON，供宿主 AI 填充题面与答案要点。
     topic: 主题名；chain_hints: [(类型, 提示)] 按推理链节点给出题方向；
-    n: 题目数量上限。返回 quiz JSON 路径。"""
+    n: 题目数量，**小于三类题型数（3）时自动抬升到 3**（保证三类覆盖）。
+    返回 quiz JSON 路径。"""
+    n = max(int(n), len(QUIZ_KINDS))
     quiz_dir = Path(quiz_dir)
     quiz_dir.mkdir(parents=True, exist_ok=True)
     kinds = list(QUIZ_KINDS)
     items = []
-    for i in range(max(n, len(kinds))):
+    for i in range(n):
         kind = kinds[i % len(kinds)]
         hint = ""
         if chain_hints and i < len(chain_hints):
@@ -34,13 +36,11 @@ def gen_quiz(topic, quiz_dir, chain_hints=None, n=5, extra=None):
             "guide": QUIZ_KINDS[kind],
             "chain_hint": hint,
             "question": "",          # 宿主 AI 填
-            "answer_points": [],     # 答案要点（评分关键词来源）
+            "answer_points": [],     # 答案要点（评分关键词来源；元素可为同义词组列表）
             "image": "",             # 对应渲染图（相对路径，可空）
             "answer": "",            # 作答（record_answer 写入）
             "score": None,           # grade 写入
         })
-        if len(items) >= n:
-            break
     quiz = {"topic": topic, "items": items}
     p = quiz_dir / f"{topic}—自检题.json"
     p.write_text(json.dumps(quiz, ensure_ascii=False, indent=1), encoding="utf-8")
