@@ -77,6 +77,8 @@ def estimate_duration(text):
 def synthesize(text, out_mp3, voice=DEFAULT_VOICE, rate="+0%"):
     """文字 → 中文旁白音频。首选 edge-tts（在线），403/网络失败自动降级 SAPI 离线。
     返回 (音频路径, 时长秒, 引擎名)。"""
+    if not text or not text.strip():
+        raise ValueError("旁白文本为空——请先写解说词，再合成")
     out_mp3 = Path(out_mp3)
     out_mp3.parent.mkdir(parents=True, exist_ok=True)
     try:
