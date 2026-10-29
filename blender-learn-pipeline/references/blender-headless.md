@@ -180,3 +180,20 @@ save_concept("三次握手", {"assumptions": [...], "atomic_facts": [...],
 
 - 存储默认 `~/.workbuddy/blender-learn-pipeline/concept-store.json`（运行时数据与代码分离）
 - `search(keyword)` 跨概念全文检索；损坏文件自动改名留档不覆盖
+
+## 三点一、电影感预设（cinematic.py）
+
+去「PPT 感」三件套，叠加在常规渲染流程之上：
+
+```python
+from cinematic import apply_preset
+cam, _ = add_camera(location=(7, -7, 6), target=(0, 0, 1.2))
+apply_preset("studio", camera=cam, focus_distance=11.0)   # studio/dramatic/soft
+render_stills(OUT)   # 之后照常渲染
+```
+
+- **原理**：电影感 = 压暗环境 + 轮廓光分离主体。`studio_lighting` 会把世界背景压暗
+  （bg_strength 0.15–0.55）并加后上方 rim 光；**正曝光会把白背景过曝成白平板**（实测坑），
+  三预设 exposure 均为负值
+- 景深（DOF）对纯色背景观感提升有限，多对象/远近层次场景才明显
+- `apply_preset` 非法名称 ValueError；对无 world 场景安全（判空防护）
