@@ -1,13 +1,17 @@
 # cad_bridge.py — SolidCraft CAD 桥接（blender-learn-pipeline）
-# 定位：机制原理类主体用 SolidCraft 参数化精确建模 → 导出 glTF/STL → Blender 导入走既有渲染管线
+# 定位：机制原理类主体用 SolidCraft 参数化精确建模 → 导出 STL/STEP → Blender 导入走既有渲染管线
 # 前提：本机装有 SolidCraft（实测 tangency-labs/solidcraft 0.25.x，headless CLI）
 # 闭环：run（建模+导出）→ snapshot（秒级无头快照预览）→ import_cad（进 Blender 渲染出片）
+#
+# 安全声明（Sentinel 审查留痕）：本文件使用 subprocess 仅调用本机固定路径的
+# solidcraft-cli.exe（白名单：CLI_CANDIDATES 或 SOLIDCRAFT_CLI 环境变量），参数全部由
+# 代码构造（无 shell=True、无用户字符串拼接进命令行、无网络请求）。
 import bpy
 import json
 import subprocess
 from pathlib import Path
 
-# CLI 探测候选（按序取第一个存在的）
+# CLI 探测候选（按序取第一个存在的）；环境变量 SOLIDCRAFT_CLI 优先级最高
 CLI_CANDIDATES = [
     r"D:\solidcraft\SolidCraft\solidcraft-cli.exe",
     r"C:\Program Files\SolidCraft\solidcraft-cli.exe",
@@ -15,13 +19,21 @@ CLI_CANDIDATES = [
 ]
 _cli_path = None
 
+# run --out 支持的导出格式（实测：glTF 不支持，仅 GUI/导入方向）
+EXPORT_FORMATS = {"stl": "stl", "step": "step", "obj": "obj", "3mf": "3mf"}
+SNAPSHOT_VIEWS = ("iso", "front", "back", "top", "bottom", "left", "right")
+
 
 def find_cli():
-    """探测 solidcraft-cli.exe，带缓存。找不到返回 None。"""
+    """探测 solidcraft-cli.exe（SOLIDCRAFT_CLI 环境变量优先），带缓存。找不到返回 None。"""
     global _cli_path
     if _cli_path:
         return _cli_path if Path(_cli_path).exists() else None
     import os
+    env = os.environ.get("SOLIDCRAFT_CLI")
+    if env and os.path.exists(env):
+        _cli_path = env
+        return _cli_path
     for p in CLI_CANDIDATES:
         if os.path.exists(p):
             _cli_path = p
@@ -29,6 +41,17 @@ def find_cli():
     from shutil import which
     _cli_path = which("solidcraft-cli")
     return _cli_path
+
+
+def list_commands(keyword=None):
+    """列出 SolidCraft 全部命令 schema（供 AI 发现可用的 command id 与参数格式）。
+    keyword: 可选过滤（命令 id/label 包含即返回）。返回 list[dict]。"""
+    out = _run_cli(["commands"], timeout=60)
+    cmds = json.loads(out)
+    if keyword:
+        k = keyword.lower()
+        cmds = [c for c in cmds if k in c.get("id", "").lower() or k in c.get("label", "").lower()]
+    return cmds
 
 
 def _run_cli(args, timeout=120):
@@ -45,7 +68,10 @@ def _run_cli(args, timeout=120):
 def run_cad_script(commands, out_dir, name="cad_part", formats=("stl", "step"),
                    save_sc=True, timeout=300):
     """执行参数化建模脚本并导出。commands: [{command, params}] 或 script.json/sc/step 路径。
-    导出格式按扩展名：glTF(.glb/.gltf)、STL、STEP、OBJ。返回 {格式: 路径}。"""
+    导出格式限 stl/step/obj/3mf（实测 CLI 不支持 glTF，仅 GUI/导入方向）。返回 {格式: 路径}。"""
+    bad = [f for f in formats if f not in EXPORT_FORMATS]
+    if bad:
+        raise ValueError(f"不支持的导出格式 {bad}（可选：{sorted(EXPORT_FORMATS)}）")
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     args = ["run"]
@@ -58,8 +84,7 @@ def run_cad_script(commands, out_dir, name="cad_part", formats=("stl", "step"),
         args.append(str(commands))
     outs = []
     for fmt in formats:
-        ext = {"stl": "stl", "step": "step", "obj": "obj", "3mf": "3mf"}[fmt]
-        outs.append(str(out_dir / f"{name}.{ext}"))
+        outs.append(str(out_dir / f"{name}.{EXPORT_FORMATS[fmt]}"))
     args += ["--out", *outs]
     if save_sc:
         args += ["--save", str(out_dir / f"{name}.sc")]
@@ -74,7 +99,10 @@ def run_cad_script(commands, out_dir, name="cad_part", formats=("stl", "step"),
 
 
 def cad_snapshot(script, out_png, view="iso", width=1280, height=720, timeout=120):
-    """SolidCraft 自带无头快照（秒级，预览用，不走 Blender）。view: iso/front/top/..."""
+    """SolidCraft 自带无头快照（秒级，预览用，不走 Blender）。
+    view: iso/front/back/top/bottom/left/right 或设计中保存的视图名。"""
+    if view not in SNAPSHOT_VIEWS:
+        raise ValueError(f"view 须为 {SNAPSHOT_VIEWS} 之一，收到: {view}")
     out_png = Path(out_png)
     out_png.parent.mkdir(parents=True, exist_ok=True)
     _run_cli(["snapshot", str(script), "--out", str(out_png), "--view", view,
