@@ -1,8 +1,8 @@
 ---
 name: blender-learn-pipeline
-version: 1.1.0
+version: 1.1.1
 description: 把「学一个东西」从线性阅读升级成一条固定五段流水线：拆到底层 → 建体系 → Blender 3D 可视化 → 讲清本质 → 自检闭环；可视化段一律用本机 Blender 无头渲染产出真 3D 产物（多视角 PNG + 360° 环绕 mp4）。只要用户想搞懂 / 学 / 讲清任何概念或原理（数学、物理、算法、协议、工程机制、行业知识），并且希望以 3D 方式呈现——说「用 Blender 讲解」「做成 3D」「3D 可视化学习」「3D 学习流水线」「边学 Blender 边学东西」「把这个原理立起来看」——或点名要求本流水线时，务必使用本技能。学习对象含空间结构、层次体系、过程演化、机制原理时尤其优先。
-compatibility: 本机需安装 Blender（本机实测 Blender 5.2，路径 C:\Program Files\Blender Foundation\Blender 5.2\blender.exe）；技能自带 scripts/blender_learn.py 助手库，无需额外 pip 依赖。
+compatibility: 需安装 Blender ≥ 4.x（5.x 实测通过，跨平台 Windows/macOS/Linux 均可，blender.exe 完整路径由运行时探测或用户提供）；技能自带 scripts/blender_learn.py 助手库，无需额外 pip 依赖；中文标注依赖系统 CJK 字体（Windows 自带，Linux/Mac 改 FONT_CANDIDATES）。
 ---
 
 # Blender 3D 学习流水线
@@ -26,6 +26,15 @@ compatibility: 本机需安装 Blender（本机实测 Blender 5.2，路径 C:\Pr
 | 5 自检闭环 | 3–5 道自检题 + 3D 复述测试 | 用户（或自测）能看着渲染图把推理链讲一遍 |
 
 各阶段详细 checklist 与模板见 `references/pipeline-stages.md`；Blender 无头渲染的命令、字体、报错处理见 `references/blender-headless.md`。
+
+## Stage 0 — 定学习档位
+
+先判档，再进流水线；用户没说就按「精通」走全流程，并在交付开头注明档位假设。
+
+| 档位 | 触发语 | 裁剪 |
+|---|---|---|
+| 精通（默认） | 「系统学 / 搞懂」 | 全五段，Stage 1–5 不裁 |
+| 速览 | 「快速过一下 / 速览 / 大概讲讲」 | 只做：推理链 → 主体选型 → 1 张主视角静帧 → 一句话本质 + 类比 → 2 道自检；跳过 DAG、环绕视频、复述测试 |
 
 ## Stage 1 — 拆到底层
 
@@ -56,6 +65,8 @@ compatibility: 本机需安装 Blender（本机实测 Blender 5.2，路径 C:\Pr
 
 若概念本身无空间性（如纯定义类），仍可用 Blender 做隐喻式表达（塔 / 管道 / 齿轮），但**必须在交付物中标注「此为隐喻非实体」**，防止误导。
 
+> 🔴 CHECKPOINT：主体类型已判定，且能说出它承载了推理链的哪几步——说不出就退回重选，不得进 Stage 3。
+
 ## Stage 3 — Blender 3D 可视化（核心段）
 
 工作法（顺序执行，不跳步）：
@@ -65,13 +76,24 @@ compatibility: 本机需安装 Blender（本机实测 Blender 5.2，路径 C:\Pr
 3. **真机渲染**：
 
    ```bash
-   "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --factory-startup \
+   BLENDER="blender.exe 的完整路径"   # 按本机替换，如 C:\Program Files\Blender Foundation\Blender 5.2\blender.exe
+   "$BLENDER" --background --factory-startup \
      --python "[主题]_scene.py" -- --out "输出目录" --frames 24
    ```
 
 4. **自检**：产物文件存在且非 0 字节、用看图工具确认中文标注渲染正常（默认字体无中文字形，必须走助手库的 CJK 字体加载）、mp4 时长合理。任何一步失败，按 `references/blender-headless.md` 的排错表处理。
 
+> 🛑 STOP：渲染产物未通过自检（文件缺失 / 中文豆腐块 / mp4 不可播）→ 不得进入 Stage 4；先排错，修不好走下方降级链。
+
 **限时与降级**：单件渲染超过 5 分钟无产物 → 降帧（24→12）、降采样（48→16）、减视角，仍失败 → 降级为静态 PNG + 文内说明，并在交付物注明降级路径。禁止无限等待，禁止交付未真实运行的伪产物。
+
+**环境降级链**（开工前探测，失败不硬上）：
+
+| 探测失败 | 处理 |
+|---|---|
+| blender 路径不可执行 | 先问用户要路径；用户环境确实无 Blender → 降级为 SVG/Mermaid 示意图 + 主卡注明「未走 3D 及原因」 |
+| 系统无中文字体（助手库 stderr 有 WARN） | 标注改用英文 + 主卡开头注明；禁止交付豆腐块图 |
+| CLI 参数报错 / 渲染报错 | 对照 `references/blender-headless.md` 排错表逐条处理，报错原文贴给排错，不凭记忆猜 |
 
 ## Stage 4 — 讲清本质
 
@@ -85,6 +107,8 @@ compatibility: 本机需安装 Blender（本机实测 Blender 5.2，路径 C:\Pr
 1. **自检题 3–5 道**（含答案要点）：覆盖推理链起点、中间推导、边界反例。
 2. **3D 复述测试**：把三张视角图交给用户，请用户看着图把推理链讲一遍。讲不出或讲错的位置 = 推理链的断点。
 3. **缺口回流**：断点定位到 Stage 1（原子事实缺）或 Stage 2（依赖缺）→ 只补对应阶段后重新出片对应镜头，不整条重跑。
+
+> 🔴 CHECKPOINT：交付前对照「质量约束与反模式」表逐条自检；任一命中 → 回对应 Stage 修复后重检，再进交付物规范。
 
 ## 交付物规范
 
