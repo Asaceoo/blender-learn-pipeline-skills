@@ -1,0 +1,5 @@
+timestamp	commit	skill	round	old_score	new_score	status	dim_changed	delta	note	eval_mode	judge_count
+2026-10-29T12:35:00+08:00	na	blender-learn-pipeline	1	82	82.2	keep	dim6(runtime-neutral)	+0.2	命令模板与compatibility去硬编码路径	dry_run	0
+2026-10-29T12:36:00+08:00	na	blender-learn-pipeline	2	82.2	88.2	keep	dim4	+6.0	插入2×CHECKPOINT+1×STOP	dry_run	0
+2026-10-29T12:37:00+08:00	na	blender-learn-pipeline	3	88.2	89.4	keep	dim3	+1.2	环境降级链三段式(Blender缺失/字体缺失/CLI报错)	dry_run	0
+2026-10-29T12:38:00+08:00	na	blender-learn-pipeline	4	89.4	90.6	keep	dim2	+1.2	Stage0学习档位(精通/速览裁剪链)	dry_run	0
