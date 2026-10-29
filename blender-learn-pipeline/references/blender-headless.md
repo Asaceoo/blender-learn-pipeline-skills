@@ -145,21 +145,3 @@ msyh.ttc → msyhbd.ttc → simhei.ttf → simsun.ttc → arial.ttf
 ## 七、限时与降级链
 
 单件渲染 5 分钟无产物 → 降帧（24→12）→ 降采样（48→16）→ 只出 3 静帧 → 主卡注明降级。禁止无限等待，禁止交付未真实运行的伪产物。
-
-## 二点八、音画同步（narration.py）
-
-给环绕视频配中文旁白，出带声 mp4：
-
-```python
-from narration import narrate_video, estimate_duration
-estimate_duration("三十字左右的解说词")     # ~4字/秒预算分镜时长
-out, dur, engine = narrate_video("render/主题—360环绕.mp4",
-                                 "这就是知识体系的核心层……",
-                                 "render/主题—带旁白.mp4")
-```
-
-- **合成降级链**：① edge-tts（在线、音质好）→ ② Windows SAPI 离线（Huihui 中文声）。
-  实测微软对 Edge TTS 风控间歇 403，降级自动触发并在返回值标注引擎名
-- 对齐策略：音频为主轴，视频不足则**末帧有限延展**（tpad stop_duration）+ `-t` 硬限；
-  禁用 `tpad stop=-1` 无限流配 `-shortest`——ffmpeg 永不收口（实测 TimeoutExpired 坑）
-- 分镜写作约束：旁白字数 ÷ 4 = 预算秒数，环绕视频帧数按 `预算秒 × fps` 反推
