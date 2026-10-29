@@ -1,6 +1,6 @@
 ---
 name: blender-learn-pipeline
-version: 1.10.0
+version: 1.13.0
 description: 把「学一个东西」从线性阅读升级成一条固定五段流水线：拆到底层 → 建体系 → Blender 3D 可视化 → 讲清本质 → 自检闭环；可视化段一律用本机 Blender 无头渲染产出真 3D 产物（多视角 PNG + 360° 环绕 mp4）。只要用户想搞懂 / 学 / 讲清任何概念或原理（数学、物理、算法、协议、工程机制、行业知识），并且希望以 3D 方式呈现——说「用 Blender 讲解」「做成 3D」「3D 可视化学习」「3D 学习流水线」「边学 Blender 边学东西」「把这个原理立起来看」——或点名要求本流水线时，务必使用本技能。学习对象含空间结构、层次体系、过程演化、机制原理时尤其优先。
 compatibility: 需安装 Blender ≥ 4.x（5.x 实测通过，跨平台 Windows/macOS/Linux 均可，blender.exe 完整路径由运行时探测或用户提供）；技能自带 scripts/blender_learn.py 助手库，无需额外 pip 依赖；中文标注依赖系统 CJK 字体（Windows 自带，Linux/Mac 改 FONT_CANDIDATES）。
 ---
@@ -74,7 +74,7 @@ compatibility: 需安装 Blender ≥ 4.x（5.x 实测通过，跨平台 Windows/
 工作法（顺序执行，不跳步）：
 
 1. **写镜头清单**：主视角 / 等轴视角 / 俯视角三张静帧的构图意图 + 环绕镜头要突出什么。镜头必须服务推理链，不为炫技加镜头。
-2. **写场景脚本**：新建 `[主题]_scene.py`，`sys.path` 指向本技能 `scripts/` 目录，`import blender_learn` 复用助手库（清场 / 打光 / 中文标注 / 多视角渲染 / 环绕渲染）。**优先复用 `teaching_components` 参数化组件库**：分层塔 `layered_tower`（层次体系）、管道流 `pipeline_flow`（过程流转）、齿轮咬合 `gear_pair`（机制原理）、轨道系统 `orbit_system`（空间关系）——传参数出场景，无适配形态再手写建主体。环绕镜头用 `render_turntable(OUT, prefix="[主题]—360环绕")` 以满足交付命名。命令与脚本骨架见 `references/blender-headless.md`。
+2. **写场景脚本**：新建 `[主题]_scene.py`，`sys.path` 指向本技能 `scripts/` 目录，`import blender_learn` 复用助手库（清场 / 打光 / 中文标注 / 多视角渲染 / 环绕渲染）。**优先复用 `teaching_components` 参数化组件库**：分层塔 `layered_tower`（层次体系）、管道流 `pipeline_flow`（过程流转）、齿轮咬合 `gear_pair`（机制原理）、轨道系统 `orbit_system`（空间关系）——传参数出场景，无适配形态再手写建主体。环绕镜头用 `render_turntable(OUT, prefix="[主题]—360环绕")` 以满足交付命名；交互网页用 `export_interactive(OUT, glb_name="[主题]")`。命令与脚本骨架见 `references/blender-headless.md`。
 3. **真机渲染**：
 
    ```bash
@@ -123,6 +123,15 @@ compatibility: 需安装 Blender ≥ 4.x（5.x 实测通过，跨平台 Windows/
 └── render/
     ├── 01-主视角.png  02-等轴视角.png  03-俯视角.png
     └── [主题]—360环绕.mp4
+```
+
+加分产物命名（按需追加，一律 `[主题]—` 前缀）：
+
+```
+render/
+├── [主题]—交互.html            # export_interactive(OUT, glb_name="[主题]")
+├── [主题]—带旁白.mp4           # narrate_video（单段）
+├── [主题]—分镜成片.mp4 + [主题].srt   # narrate_sections（分镜）
 ```
 
 主卡固定骨架：
