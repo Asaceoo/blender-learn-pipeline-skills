@@ -1,6 +1,6 @@
 ---
 name: blender-learn-pipeline
-version: 1.4.3
+version: 1.5.0
 description: 把「学一个东西」从线性阅读升级成一条固定五段流水线：拆到底层 → 建体系 → Blender 3D 可视化 → 讲清本质 → 自检闭环；可视化段一律用本机 Blender 无头渲染产出真 3D 产物（多视角 PNG + 360° 环绕 mp4）。只要用户想搞懂 / 学 / 讲清任何概念或原理（数学、物理、算法、协议、工程机制、行业知识），并且希望以 3D 方式呈现——说「用 Blender 讲解」「做成 3D」「3D 可视化学习」「3D 学习流水线」「边学 Blender 边学东西」「把这个原理立起来看」——或点名要求本流水线时，务必使用本技能。学习对象含空间结构、层次体系、过程演化、机制原理时尤其优先。
 compatibility: 需安装 Blender ≥ 4.x（5.x 实测通过，跨平台 Windows/macOS/Linux 均可，blender.exe 完整路径由运行时探测或用户提供）；技能自带 scripts/blender_learn.py 助手库，无需额外 pip 依赖；中文标注依赖系统 CJK 字体（Windows 自带，Linux/Mac 改 FONT_CANDIDATES）。
 ---
