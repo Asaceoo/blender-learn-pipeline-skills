@@ -21,13 +21,14 @@ sys.path.insert(0, r"C:\Users\iamly\.workbuddy\skills\blender-learn-pipeline\scr
 from blender_learn import (clear_scene, setup_world, add_light, add_box,
                            add_label, add_camera, setup_render,
                            render_stills, render_turntable)
+from teaching_components import layered_tower, pipeline_flow, gear_pair, orbit_system
 
-# ② 建主体（只写这一段，其余全部复用助手库）
+# ② 建主体：优先用参数化组件，一行出一个教具；无适配形态再手写 add_box/add_label
 clear_scene()
 setup_world()
 add_light("Key", type_='SUN', energy=3.0)
-add_box("核心", size=(2.2, 2.2, 0.9), location=(0, 0, 0.45), color=(0.85, 0.33, 0.25))
-add_label("核心层", location=(0, -1.6, 0.45), size=0.42)
+layered_tower([("延伸层", (0.30, 0.55, 0.85), 3.8), ("支撑层", (0.93, 0.65, 0.15), 3.0),
+               ("核心层", (0.85, 0.33, 0.25), 2.2)], title="3D 学习流水线", ring=True)
 
 # ③ 渲染
 OUT = os.path.join(os.path.dirname(bpy.data.filepath) or ".", "render")  # 或写死目录
@@ -38,6 +39,17 @@ render_turntable(OUT, prefix="主题—360环绕")   # 360° 环绕 mp4（交付
 ```
 
 注意：脚本里**不要**调用 `main()`——助手库的入口由 Blender 命令行触发，import 时不会执行。
+
+## 二点五、参数化教学组件库（teaching_components.py）
+
+| 组件 | 适用主体类型 | 关键参数 | 返回 |
+|---|---|---|---|
+| `layered_tower(layers, gap, title, ring)` | 层次 / 体系结构 | `layers=[(名称, 颜色, 宽度)]` 自下而上 | 对象列表 |
+| `pipeline_flow(stages, seg, gap, title)` | 过程 / 流转 | `stages=[(名称, 颜色)]` 从左到右，段间自动放流向箭头 | (对象列表, 总宽度) |
+| `gear_pair(teeth1, teeth2, m)` | 机制原理 | 齿数 + 模数；节圆相切、齿相位交错咬合，自动标注传动比（约分） | (对象列表, 传动比文本) |
+| `orbit_system(bodies)` | 空间关系 | `bodies=[(名称, 颜色, 轨道半径, 星体半径)]`，行星自动错开角度、标签随位散布 | 对象列表 |
+
+四组件均基于 blender_learn 原语构建（继承中文标注防重影约定），真机验证通过（齿轮咬合间距、箭头可见性、标签散布已调优）。新增组件时同样放进本模块，保持「传参数出场景」约定。
 
 ## 三、中文标注（必读）
 
